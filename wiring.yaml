@@ -1,0 +1,183 @@
+connectors:
+  40pins_machine:
+    type: IDE
+    subtype: male
+    pins: &40pins_pins
+      [
+      1,3,5,7, 9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,
+      2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40
+      ]
+    pinlabels: &40pins_labels
+      [
+      x common, x pul, x dir, x ena,
+      y common, y pul, y dir, y ena,
+      z common, z pul, z dir, z ena,
+      a common, a pul, a dir, a ena,
+      33 unused, 35 unused, 37 unused, 39 unused,
+      2 reserved power 5v, 4 reserved power gnd,
+      WAS laservoeding 5v, laser gnd, laser tl, laser in, laser wp,
+      limit common, limit x, limit y, limit z,
+      24 unused, 26 unused, 28 unused, 30 unused, 32 unused,
+      door switch a,
+      door switch b,
+      38 unused,
+      40 unused
+      ]
+
+  step_driver_x: &step_driver
+    subtype: male
+    pinlabels: [PUL+,PUL-,DIR+,DIR-,ENA+,ENA-]
+  step_driver_y:
+    <<: *step_driver
+  step_driver_z:
+    <<: *step_driver
+
+  limit_switch_x:
+    pinlabels: &limit_labels
+      [common, n_o, n_c]
+  limit_switch_y:
+    pinlabels: *limit_labels
+  limit_switch_z:
+    pinlabels: *limit_labels
+  door_relais:
+    pinlabels: [1,2,3]
+
+  
+
+  picocnc_40pins:
+    subtype: female
+    pins: *40pins_pins
+    pinlabels: *40pins_labels
+
+
+  picocnc_side_steppers:
+    pinlabels:
+      [
+      x gnd, x stp, x dir, x en,
+      y gnd, y stp, y dir, y en,
+      z gnd, z stp, z dir, z en,
+      a gnd, a stp, a dir, a en
+      ]
+    
+  picocnc_side_spindle_relais:
+    pinlabels:
+      [
+        spindle pwm,
+        spindle en,
+        spindle dir,
+        spindle gnd
+      ]
+
+  picocnc_side_control:
+    pinlabels:
+      [
+        lim a sig, lim a gnd,
+        lim z sig, lim z gnd,
+        lim y sig, lim y gnd,
+        lim x sig, lim x gnd,
+        probe sig, probe gnd,
+        door sig, door gnd,
+        start sig, start gnd,
+        hold sig, hold gnd,
+        reset sig, reset gnd
+      ]
+
+
+cables:
+  step_x: &step_cable
+    wirecount: 4
+    show_wirecount: false
+    show_wirenumbers: false
+    colors: [BK, RD, BU, YE]
+  step_y:
+    <<: *step_cable
+  step_z:
+    <<: *step_cable
+  limit_x: &limit_cable
+    wirecount: 2
+    show_wirecount: false
+    show_wirenumbers: false
+    colors: [BK,WT]
+  limit_y:
+    <<: *limit_cable
+  limit_z:
+    <<: *limit_cable
+  picocnc_flatcable:
+    wirecount: 40
+    wirelabels: *40pins_labels
+
+  
+
+
+connections:
+  -
+    - 40pins_machine: [x common, x pul, x dir, x ena]
+    - step_x: [1-4]
+  -
+    - step_x: [1,1,1,2,3,4]
+    - step_driver_x: [PUL-,DIR-,ENA-,PUL+,DIR+,ENA+]
+
+  -
+    - 40pins_machine: [y common, y pul, y dir, y ena]
+    - step_y: [1-4]
+  -
+    - step_y: [1,1,1,2,3,4]
+    - step_driver_y: [PUL-,DIR-,ENA-,PUL+,DIR+,ENA+]
+
+  -
+    - 40pins_machine: [z common, z pul, z dir, z ena]
+    - step_z: [1-4]
+  -
+    - step_z: [1,1,1,2,3,4]
+    - step_driver_z: [PUL-,DIR-,ENA-,PUL+,DIR+,ENA+]
+  -
+    - 40pins_machine: [limit common, limit x]
+    - limit_x: [1,2]
+    - limit_switch_x: [common, n_c]
+  -
+    - 40pins_machine: [limit common, limit y]
+    - limit_y: [1,2]
+    - limit_switch_y: [common, n_c]
+  -
+    - 40pins_machine: [limit common, limit z]
+    - limit_z: [1,2]
+    - limit_switch_z: [common, n_c]
+  
+
+  -
+    - picocnc_40pins: *40pins_pins
+    - picocnc_flatcable: [1-40] # Caution: Pin-numbering is not right. This is a workaround around the fact that for cables, you can't declare a different order like with connectors (pins-attribute)
+  -
+    - picocnc_flatcable: [x common, x pul, x dir, x ena]
+    - picocnc_side_steppers: [x gnd, x stp, x dir, x en]
+  -
+    - picocnc_flatcable: [y common, y pul, y dir, y ena]
+    - picocnc_side_steppers: [y gnd, y stp, y dir, y en]
+  -
+    - picocnc_flatcable: [z common, z pul, z dir, z ena]
+    - picocnc_side_steppers: [z gnd, z stp, z dir, z en]
+
+  ## TODO: Laser bekabeling dubbelchecken
+  -
+    - picocnc_flatcable: [laser gnd, laser wp, laser in]
+    - picocnc_side_spindle_relais: [spindle gnd, spindle en, spindle pwm]
+  -
+    - picocnc_flatcable: [limit common, limit x]
+    - picocnc_side_control: [lim x gnd, lim x sig]
+  -
+    - picocnc_flatcable: [limit common, limit y]
+    - picocnc_side_control: [lim y gnd, lim y sig]
+  -
+    - picocnc_flatcable: [limit common, limit z]
+    - picocnc_side_control: [lim z gnd, lim z sig]
+  -
+    - picocnc_flatcable: [door switch a, door switch b]
+    - picocnc_side_control: [door gnd, door sig]
+
+
+tweak:
+  override:
+    picocnc_flatcable:
+      shape: none  # Hide the surrounding frame
+      fontsize: "12"  # Reduce the space needed for text
+      fontcolor: white  # Same as background to hide the text
