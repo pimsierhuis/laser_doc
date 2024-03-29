@@ -97,7 +97,7 @@ cables:
     wirecount: 2
     show_wirecount: false
     show_wirenumbers: false
-    colors: [BK,WT]
+    colors: [BK,WH]
   limit_y:
     <<: *limit_cable
   limit_z:
